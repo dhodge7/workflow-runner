@@ -1,0 +1,38 @@
+name: monthly-business-review
+params: [month]
+groups:
+  - id: gather
+    steps:
+      - id: delivery
+        skill: pull-delivery-metrics
+        prompt: Pull delivery metrics for {params.month}.
+      - id: incidents
+        skill: pull-incident-summary
+        prompt: Summarize incidents for {params.month}, Sev1 and Sev2 only.
+      - id: roadmap
+        skill: pull-roadmap-status
+        prompt: Pull roadmap status for {params.month}.
+
+  - id: analyze
+    steps:
+      - id: trend-analysis
+        skill: trend-analysis
+        prompt: |
+          Compare {params.month} against the prior 3 months.
+          Delivery data: {steps.delivery.result}
+          Incident data: {steps.incidents.result}
+          Roadmap data: {steps.roadmap.result}
+          Call out anything that moved more than 15%.
+
+  - id: deliver
+    steps:
+      - id: mbr-deck
+        skill: mbr-deck
+        prompt: |
+          Build the MBR deck for {params.month}.
+          Analysis: {steps.trend-analysis.result}
+          Raw data folders: {steps.delivery.dir}, {steps.incidents.dir}
+      - id: exec-summary
+        prompt: |
+          Write a one-page executive summary for {params.month}.
+          Use only: {steps.trend-analysis.result}
